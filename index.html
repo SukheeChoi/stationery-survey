@@ -73,6 +73,7 @@ input::placeholder,textarea::placeholder{color:var(--muted); opacity:.8}
 .follow span{font-size:13px; color:var(--muted)}
 .follow input{background:var(--surface)}
 .err{font-size:14px; color:var(--accent)}
+.consent-terms{padding:0 14px 12px 46px; font-size:12px}
 
 /* intro */
 .intro h1{font-size:26px}
@@ -126,21 +127,18 @@ body{margin:0}
 
   // follow: 선지를 고르면 그 아래 뜨는 짧은 주관식
   var QS = [
-    {id:'insta', type:'text', req:true, sec:'기본 정보', t:'인스타그램 아이디', help:'기프티콘을 DM으로 보내드릴 계정이에요.', ph:'@my_stationery'},
+    {id:'insta', type:'text', req:true, consent:true, sec:'기본 정보', t:'인스타그램 아이디', help:'기프티콘을 DM으로 보내드릴 계정이에요.', ph:'@my_stationery'},
     {id:'years', type:'radio', sec:'기본 정보', t:'문구 사업을 하신 지 얼마나 되셨나요?', opts:['6개월 미만','6개월 ~ 1년','1년 ~ 3년','3년 ~ 5년','5년 이상']},
     {id:'kinds', type:'check', sec:'기본 정보', t:'주로 만드는 제품을 모두 골라주세요.', opts:['스티커','메모지·떡메','엽서·카드','다이어리·노트','마스킹테이프','키링·아크릴 굿즈','포장용품(봉투·씰)'], other:true},
     {id:'recent', type:'text', req:true, sec:'최근 만든 제품', t:'가장 최근에 제작한 문구는 무엇인가요?', help:'기억나는 대로 편하게 적어주세요.', ph:'예) 30장 원형 씰 스티커'},
     {id:'process', type:'check', req:true, sec:'최근 만든 제품', t:'그 제품을 만들어 판매하기까지 거친 과정을 모두 골라주세요.',
-      help:'고른 과정마다 <b>어떻게 했는지, 어떤 불편함이 있었는지</b> 짧게 적어주시면 큰 도움이 돼요.',
-      opts:STEPS, other:true, otherPh:'선택지에 없는 과정이 있다면 적어주세요', follow:{label:'어떻게 했나요? 어떤 불편함이 있었나요?', ph:'예) 블로그 검색으로 3곳 견적, 소량은 거절당함'}},
-    {id:'tools', type:'para', req:true, sec:'쓰는 도구', t:'사업에 쓰는 도구·서비스를 알려주세요. 용도도 함께 알려주세요.',
-      help:'앱, 웹사이트, 프로그램, 수기작업 등 형태는 상관없어요.', ph:'예)\n프로크리에이트 - 디자인\n아이디어스·스마트스토어 - 판매\n엑셀 - 재고·정산\n카카오톡 - 인쇄소 연락'},
+      help:'고른 과정마다 <b>어떻게 했는지, 어떤 불편함이 있었는지</b> 짧게 적어주시면 큰 도움이 돼요.\n예) 생산공장 찾기 어려움. 소량생산 거절당함',
+      opts:STEPS, other:true, otherPh:'선택지에 없는 과정이 있다면 적어주세요', follow:{label:'어떻게 했나요? 어떤 불편함이 있었나요?'}},
     {id:'hard', type:'check', req:true, followReqOne:true, sec:'까다로운 과정', t:'제작·판매 과정 중 까다로운 과정을 골라주세요.',
-      help:'<b>복수 선택 가능</b> · 고른 과정마다 까다로운 이유를 적어주세요.',
-      opts:HARD, other:true, follow:{label:'왜 까다로운가요?', ph:'예) 제작 규모와 예산에 맞는 공장 찾는 데 시간이 많이 들어요'}},
-    {id:'early', type:'para', sec:'사업 초기', t:'사업 초기에 가장 어려웠던 점은 무엇이었나요?', help:'그때 어떻게 해결했는지(혹은 아직 못 했는지)도 적어주시면 좋아요.', ph:'자유롭게 적어주세요'},
-    {id:'interview', type:'radio', sec:'추가 인터뷰', t:'추가 인터뷰에 참여하실 수 있나요?', help:'참여해주시면 <b>백화점 상품권 3만원</b>(기프티콘)을 추가로 보내드려요.', opts:['네, 가능해요','아니요, 설문까지만 할게요']},
-    {id:'consent', type:'check', req:true, sec:'마지막', t:'개인정보 수집·이용 동의', help:'수집 항목: 인스타그램 아이디\n목적: 기프티콘 발송 및 추가 인터뷰 연락\n보관: 기프티콘 발송 후 1개월 내 파기', opts:['동의합니다']}
+      help:'<b>복수 선택 가능</b> · 고른 과정이 까다로운 이유를 적어주세요.',
+      opts:HARD, other:true, follow:{label:'까다로운 이유'}},
+    {id:'early', type:'para', sec:'사업 초기', t:'사업 초기에 가장 어려웠던 점은 무엇이었나요?', help:'그때 어떻게 해결했는지(혹은 아직 못 했는지) 적어주세요.', ph:'자유롭게 적어주세요'},
+    {id:'interview', type:'check', sec:'추가 인터뷰', t:'추가 인터뷰에 참여하실 수 있나요?', help:'참여해주시면 <b>백화점 상품권 3만원</b>(기프티콘)을 추가로 보내드려요.', opts:['네, 가능해요']}
   ];
 
   var A = {};        // 응답: {id: value | [{name, note}]}
@@ -178,6 +176,15 @@ body{margin:0}
       f.setAttribute('aria-label', q.t);
       f.addEventListener('input', function(){ A[q.id]=f.value; clearErr(c); });
       c.appendChild(f);
+      if(q.consent){
+        var cb = el('div','opt'+(A.consent?' on':'')), cl = el('label');
+        var ci = el('input'); ci.type='checkbox'; ci.id='f-consent'; ci.checked=!!A.consent;
+        cl.appendChild(ci); cl.appendChild(el('span','name','개인정보 수집·이용에 동의합니다 (필수)'));
+        cb.appendChild(cl);
+        cb.appendChild(html('p','help consent-terms','수집 항목: 인스타그램 아이디 · 목적: 기프티콘 발송 및 추가 인터뷰 연락 · 보관: 기프티콘 발송 후 1개월 내 파기'));
+        ci.addEventListener('change', function(){ A.consent=ci.checked; cb.classList.toggle('on', ci.checked); clearErr(c); refreshNext(); });
+        c.appendChild(cb);
+      }
     } else {
       var box = el('div','opts');
       var list = q.opts.slice(); if(q.other) list.push('__other');
@@ -199,7 +206,7 @@ body{margin:0}
         if(q.follow){
           fol.appendChild(el('span',null,q.follow.label));
           noteInput = el('input'); noteInput.type='text'; noteInput.id=inp.id+'-note';
-          noteInput.placeholder=q.follow.ph; noteInput.setAttribute('aria-label', q.follow.label);
+          noteInput.placeholder=q.follow.ph||''; noteInput.setAttribute('aria-label', q.follow.label);
           fol.appendChild(noteInput);
         }
         if(fol.childNodes.length) o.appendChild(fol);
@@ -247,6 +254,7 @@ body{margin:0}
       return '';
     }
     if(q.req && !(v && String(v).trim())) return '이 문항은 필수예요.';
+    if(q.consent && !A.consent) return '개인정보 수집·이용에 동의해주세요.';
     return '';
   }
 
@@ -291,10 +299,11 @@ body{margin:0}
     var out = {website: document.getElementById('website').value};
     QS.forEach(function(q){
       var v = A[q.id];
-      if(q.id==='consent') out.consent = !!(v && v.length);
+      if(q.id==='interview') out.interview = (v && v.length) ? v[0].name : '';
       else if(Array.isArray(v)) out[q.id] = v.map(function(p){ return {name:p.name, note:p.note||''}; });
       else out[q.id] = v || '';
     });
+    out.consent = !!A.consent;
     return out;
   }
 

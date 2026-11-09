@@ -90,7 +90,7 @@ http.createServer(async (req, res) => {
   if (body.website) return send(res, 200, { ok: true }); // 봇용 숨은 칸
 
   const a = clean(body);
-  if (!a.insta || !a.recent || !a.process.length || !a.tools || !a.hard.length || !a.consent) {
+  if (!a.insta || !a.recent || !a.process.length || !a.hard.length || !a.consent) {
     return send(res, 400, { error: 'missing_required' });
   }
 
