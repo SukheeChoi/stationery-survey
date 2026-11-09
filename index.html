@@ -131,8 +131,8 @@ body{margin:0}
     {id:'kinds', type:'check', sec:'기본 정보', t:'주로 만드는 제품을 모두 골라주세요.', opts:['스티커','메모지·떡메','엽서·카드','다이어리·노트','마스킹테이프','키링·아크릴 굿즈','포장용품(봉투·씰)'], other:true},
     {id:'recent', type:'text', req:true, sec:'최근 만든 제품', t:'가장 최근에 제작한 문구는 무엇인가요?', help:'기억나는 대로 편하게 적어주세요.', ph:'예) 30장 원형 씰 스티커'},
     {id:'process', type:'check', req:true, sec:'최근 만든 제품', t:'그 제품을 만들어 판매하기까지 거친 과정을 모두 골라주세요.',
-      help:'고른 과정마다 <b>어떻게 했는지, 얼마나 걸렸는지</b> 짧게 적어주시면 큰 도움이 돼요.',
-      opts:STEPS, other:true, follow:{label:'어떻게 했나요? 걸린 기간은요?', ph:'예) 블로그 검색으로 3곳 견적, 1주'}},
+      help:'고른 과정마다 <b>어떻게 했는지, 어떤 불편함이 있었는지</b> 짧게 적어주시면 큰 도움이 돼요.',
+      opts:STEPS, other:true, otherPh:'선택지에 없는 과정이 있다면 적어주세요', follow:{label:'어떻게 했나요? 어떤 불편함이 있었나요?', ph:'예) 블로그 검색으로 3곳 견적, 소량은 거절당함'}},
     {id:'tools', type:'para', req:true, sec:'쓰는 도구', t:'사업에 쓰는 도구·서비스를 알려주세요. 용도도 함께 알려주세요.',
       help:'앱, 웹사이트, 프로그램, 수기작업 등 형태는 상관없어요.', ph:'예)\n프로크리에이트 - 디자인\n아이디어스·스마트스토어 - 판매\n엑셀 - 재고·정산\n카카오톡 - 인쇄소 연락'},
     {id:'hard', type:'check', req:true, followReqOne:true, sec:'까다로운 과정', t:'제작·판매 과정 중 까다로운 과정을 골라주세요.',
@@ -193,7 +193,7 @@ body{margin:0}
         var otherInput, noteInput;
         if(isOther){
           otherInput = el('input'); otherInput.type='text'; otherInput.id=inp.id+'-name';
-          otherInput.placeholder = '직접 입력'; otherInput.setAttribute('aria-label','기타 항목');
+          otherInput.placeholder = q.otherPh || '직접 입력'; otherInput.setAttribute('aria-label','기타 항목');
           fol.appendChild(otherInput);
         }
         if(q.follow){

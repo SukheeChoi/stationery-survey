@@ -1,8 +1,9 @@
-// 설문 응답 수신 서버: POST /responses → MariaDB 저장 → events.log 한 줄 기록(Claude가 감시해 푸시)
+// 설문 응답 수신 서버: POST /responses → MariaDB 저장 → ntfy 푸시 + events.log 기록
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const https = require('https');
 const mysql = require('mysql2/promise');
 
 const env = Object.fromEntries(
@@ -17,6 +18,19 @@ const pool = mysql.createPool({
   host: 'localhost', user: env.DB_USER, password: env.DB_PASS, database: env.DB_NAME,
   waitForConnections: true, connectionLimit: 4, charset: 'utf8mb4',
 });
+
+// ntfy 푸시 (실패해도 저장에는 영향 없음)
+function notify(title, message) {
+  if (!env.NTFY_TOPIC) return;
+  const body = JSON.stringify({ topic: env.NTFY_TOPIC, title, message, tags: ['memo'] });
+  const req = https.request('https://ntfy.sh/', {
+    method: 'POST', timeout: 10000,
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+  }, r => r.resume());
+  req.on('error', e => console.error(new Date().toISOString(), 'ntfy', e.message));
+  req.on('timeout', () => req.destroy());
+  req.end(body);
+}
 
 // IP당 10분에 5건
 const hits = new Map();
@@ -92,9 +106,12 @@ http.createServer(async (req, res) => {
       'interview=' + (a.interview || '-'),
     ].join(' | ').replace(/[\r\n]+/g, ' ');
     fs.appendFileSync(LOG, line + '\n');
+    notify(`새 설문 응답 #${r.insertId} · ${a.insta}`,
+      `까다로운 과정: ${a.hard.map(p => p.name).join(', ')}\n추가 인터뷰: ${a.interview || '응답 안 함'}`);
     send(res, 201, { ok: true });
   } catch (e) {
     console.error(new Date().toISOString(), e.message);
+    notify('설문 저장 실패', e.message.slice(0, 200));
     send(res, 500, { error: 'save_failed' });
   }
 }).listen(PORT, '127.0.0.1', () => console.log(`survey server on 127.0.0.1:${PORT}`));
