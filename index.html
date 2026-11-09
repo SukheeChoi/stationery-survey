@@ -325,6 +325,40 @@ body{margin:0}
     pos--;
     render();
   });
+  // 모바일 키보드가 올라오면 입력칸을 키보드 위 보이는 영역으로 스크롤
+  var vv = window.visualViewport, topBar = document.getElementById('top'), nav = document.querySelector('.nav');
+  function isField(t){ return t && (t.tagName==='TEXTAREA' || (t.tagName==='INPUT' && t.type==='text')); }
+  function keepVisible(){
+    var f = document.activeElement;
+    if(!isField(f)) return;
+    var viewTop = vv ? vv.offsetTop : 0;
+    var viewBottom = viewTop + (vv ? vv.height : window.innerHeight);
+    var navTop = nav.getBoundingClientRect().top;
+    if(navTop < viewBottom && navTop > viewTop) viewBottom = navTop;          // 키보드 위로 따라 올라온 하단 버튼 고려
+    var headBottom = topBar.hidden ? viewTop : Math.max(viewTop, topBar.getBoundingClientRect().bottom);
+    var r = f.getBoundingClientRect();
+    var room = viewBottom - headBottom;
+    var target = r.height + 24 > room ? headBottom + 12 : null;            // 칸이 크면 윗부분부터
+    if(target === null){
+      if(r.top < headBottom + 12) target = headBottom + 12;
+      else if(r.bottom > viewBottom - 12) target = viewBottom - 12 - r.height;
+    }
+    if(target !== null) window.scrollBy({top: r.top - target, behavior:'smooth'});
+  }
+  function kbPad(){
+    var kb = vv ? Math.max(0, window.innerHeight - vv.height) : 0;
+    document.body.style.paddingBottom = (120 + kb) + 'px';                   // 맨 아래 칸도 키보드 위로 올릴 여백
+  }
+  var timer;
+  document.addEventListener('focusin', function(e){
+    if(!isField(e.target)) return;
+    clearTimeout(timer); timer = setTimeout(function(){ kbPad(); keepVisible(); }, 320);
+  });
+  document.addEventListener('focusout', function(){ setTimeout(kbPad, 120); });
+  if(vv){
+    vv.addEventListener('resize', function(){ kbPad(); clearTimeout(timer); timer = setTimeout(keepVisible, 60); });
+  }
+
   render();
 })();
 </script>
