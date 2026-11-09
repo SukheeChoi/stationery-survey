@@ -65,6 +65,7 @@ input::placeholder,textarea::placeholder{color:var(--muted); opacity:.8}
 .follow input{background:var(--surface)}
 .err{font-size:14px; color:var(--accent)}
 .kb-open .nav{display:none}
+.follow textarea.missing{border-color:var(--accent)}
 .consent-terms{padding:0 14px 12px 46px; font-size:12px}
 
 /* intro */
@@ -123,11 +124,11 @@ body{margin:0}
     {id:'years', type:'radio', sec:'기본 정보', t:'문구 사업을 하신 지 얼마나 되셨나요?', opts:['6개월 미만','6개월 ~ 1년','1년 ~ 3년','3년 ~ 5년','5년 이상']},
     {id:'kinds', type:'check', sec:'기본 정보', t:'주로 만드는 제품을 모두 골라주세요.', opts:['스티커','메모지·떡메','엽서·카드','다이어리·노트','마스킹테이프','키링·아크릴 굿즈','포장용품(봉투·씰)'], other:true},
     {id:'recent', type:'text', multiline:true, req:true, sec:'최근 만든 제품', t:'가장 최근에 제작한 문구는 무엇인가요?', help:'기억나는 대로 편하게 적어주세요.', ph:'예) 30장 원형 씰 스티커'},
-    {id:'process', type:'check', req:true, followReqOne:true, followErr:'고른 과정 중 하나 이상은 적어주세요. 나머지는 비워도 돼요.', sec:'최근 만든 제품', t:'그 제품을 만들어 판매하기까지 거친 과정을 모두 골라주세요.',
-      help:'고른 과정에 <b>어떻게 했는지, 어떤 불편함이 있었는지</b> 짧게 적어주세요.\n<b>하나만 적어도 괜찮아요.</b> 나머지는 비워둬도 돼요.\n예) 생산공장 찾기 어려움. 소량생산 거절당함',
+    {id:'process', type:'check', req:true, sec:'최근 만든 제품', t:'그 제품을 만들어 판매하기까지 거친 과정을 모두 골라주세요.',
+      help:'고른 과정에 <b>어떻게 했는지, 어떤 불편함이 있었는지</b> 짧게라도 적어주시면 큰 도움이 돼요. <b>필수는 아니에요.</b>\n예) 생산공장 찾기 어려움. 소량생산 거절당함',
       opts:STEPS, other:true, otherPh:'선택지에 없는 과정이 있다면 적어주세요', follow:{label:'어떻게 했나요? 어떤 불편함이 있었나요?'}},
-    {id:'hard', type:'check', req:true, followReqOne:true, sec:'까다로운 과정', t:'제작·판매 과정 중 까다로운 과정을 골라주세요.',
-      help:'<b>복수 선택 가능</b> · 고른 과정이 까다로운 이유를 적어주세요.',
+    {id:'hard', type:'check', req:true, followReqAll:true, sec:'까다로운 과정', t:'제작·판매 과정 중 까다로운 과정을 골라주세요.',
+      help:'<b>복수 선택 가능</b> · 고른 과정마다 까다로운 이유를 짧게 적어주세요.\n<b>사소한 이유도 괜찮아요.</b>',
       opts:HARD, other:true, follow:{label:'까다로운 이유'}},
     {id:'early', type:'para', sec:'사업 초기', t:'사업 초기에 가장 어려웠던 점은 무엇이었나요?', help:'그때 어떻게 해결했는지(혹은 아직 못 했는지) 적어주세요.', ph:'자유롭게 적어주세요'},
     {id:'interview', type:'check', sec:'추가 인터뷰', t:'추가 인터뷰에 참여하실 수 있나요?', help:'참여해주시면 <b>백화점 상품권 3만원</b>(기프티콘)을 추가로 보내드려요.', opts:['네, 가능해요']}
@@ -225,7 +226,7 @@ body{margin:0}
           if(inp.checked){ var first = fol.querySelector('textarea, input'); if(first) first.focus({preventScroll:true}); }
         });
         if(otherInput) otherInput.addEventListener('input', function(){ var p=findPick(q,name); if(p) p.name=otherInput.value.trim()||'기타'; clearErr(c); });
-        if(noteInput) noteInput.addEventListener('input', function(){ var p=findPick(q,name); if(p) p.note=noteInput.value; clearErr(c); });
+        if(noteInput) noteInput.addEventListener('input', function(){ var p=findPick(q,name); if(p) p.note=noteInput.value; if(noteInput.value.trim()) noteInput.classList.remove('missing'); clearErr(c); });
         sync();
         box.appendChild(o);
       });
@@ -254,7 +255,13 @@ body{margin:0}
       var otherEmpty = v.some(function(p){ return p.key==='__other' && p.name==='기타'; });
       if(otherEmpty) return '기타 항목을 적어주세요.';
       if(q.req && !v.length) return '하나 이상 골라주세요.';
-      if(q.followReqOne && v.length && !v.some(function(p){return (p.note||'').trim();})) return q.followErr || '고른 과정 중 하나 이상은 이유를 적어주세요.';
+      if(q.followReqAll){
+        var missing = v.filter(function(p){ return !(p.note||'').trim(); });
+        document.querySelectorAll('#q-'+q.id+' .follow textarea[id$="-note"]').forEach(function(t){
+          t.classList.toggle('missing', !!t.offsetParent && !t.value.trim());
+        });
+        if(missing.length) return '고른 과정마다 이유를 적어주세요. 짧아도 괜찮아요.';
+      }
       return '';
     }
     if(q.req && !(v && String(v).trim())) return '이 문항은 필수예요.';
