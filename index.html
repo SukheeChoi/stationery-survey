@@ -285,7 +285,7 @@ body{margin:0}
   }
 
   var API = null;
-  fetch('api.json', {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(j){ API = j.url; }).catch(function(){});
+  fetch('api.json?t=' + Date.now(), {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(j){ API = j.url; }).catch(function(){});
 
   function payload(){
     var out = {website: document.getElementById('website').value};
