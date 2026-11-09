@@ -51,6 +51,7 @@ input[type=text],textarea{
   border:1px solid var(--line); border-radius:10px; padding:12px 14px;
 }
 textarea{min-height:140px; resize:vertical}
+textarea.grow{min-height:0; height:auto; resize:none; overflow:hidden; line-height:1.5}
 input::placeholder,textarea::placeholder{color:var(--muted); opacity:.8}
 
 .opts{display:flex; flex-direction:column; gap:8px}
@@ -121,7 +122,7 @@ body{margin:0}
     {id:'insta', type:'text', req:true, consent:true, sec:'기본 정보', t:'인스타그램 아이디', help:'기프티콘을 DM으로 보내드릴 계정이에요.', ph:'@my_stationery'},
     {id:'years', type:'radio', sec:'기본 정보', t:'문구 사업을 하신 지 얼마나 되셨나요?', opts:['6개월 미만','6개월 ~ 1년','1년 ~ 3년','3년 ~ 5년','5년 이상']},
     {id:'kinds', type:'check', sec:'기본 정보', t:'주로 만드는 제품을 모두 골라주세요.', opts:['스티커','메모지·떡메','엽서·카드','다이어리·노트','마스킹테이프','키링·아크릴 굿즈','포장용품(봉투·씰)'], other:true},
-    {id:'recent', type:'text', req:true, sec:'최근 만든 제품', t:'가장 최근에 제작한 문구는 무엇인가요?', help:'기억나는 대로 편하게 적어주세요.', ph:'예) 30장 원형 씰 스티커'},
+    {id:'recent', type:'text', multiline:true, req:true, sec:'최근 만든 제품', t:'가장 최근에 제작한 문구는 무엇인가요?', help:'기억나는 대로 편하게 적어주세요.', ph:'예) 30장 원형 씰 스티커'},
     {id:'process', type:'check', req:true, sec:'최근 만든 제품', t:'그 제품을 만들어 판매하기까지 거친 과정을 모두 골라주세요.',
       help:'고른 과정마다 <b>어떻게 했는지, 어떤 불편함이 있었는지</b> 짧게 적어주시면 큰 도움이 돼요.\n예) 생산공장 찾기 어려움. 소량생산 거절당함',
       opts:STEPS, other:true, otherPh:'선택지에 없는 과정이 있다면 적어주세요', follow:{label:'어떻게 했나요? 어떤 불편함이 있었나요?'}},
@@ -162,7 +163,8 @@ body{margin:0}
     if(q.help) c.appendChild(html('p','help',q.help));
 
     if(q.type==='text' || q.type==='para'){
-      var f = el(q.type==='text'?'input':'textarea'); if(q.type==='text') f.type='text';
+      var f = (q.type==='text' && !q.multiline) ? el('input') : el('textarea');
+      if(f.tagName==='INPUT') f.type='text'; else if(q.type==='text') growable(f);
       f.id='f-'+q.id; f.placeholder=q.ph||''; f.value=A[q.id]||'';
       f.setAttribute('aria-label', q.t);
       f.addEventListener('input', function(){ A[q.id]=f.value; clearErr(c); });
@@ -190,13 +192,13 @@ body{margin:0}
         var fol = el('div','follow'); fol.hidden = true;
         var otherInput, noteInput;
         if(isOther){
-          otherInput = el('input'); otherInput.type='text'; otherInput.id=inp.id+'-name';
+          otherInput = growable(el('textarea')); otherInput.id=inp.id+'-name';
           otherInput.placeholder = q.otherPh || '직접 입력'; otherInput.setAttribute('aria-label','기타 항목');
           fol.appendChild(otherInput);
         }
         if(q.follow){
           fol.appendChild(el('span',null,q.follow.label));
-          noteInput = el('input'); noteInput.type='text'; noteInput.id=inp.id+'-note';
+          noteInput = growable(el('textarea')); noteInput.id=inp.id+'-note';
           noteInput.placeholder=q.follow.ph||''; noteInput.setAttribute('aria-label', q.follow.label);
           fol.appendChild(noteInput);
         }
@@ -211,6 +213,7 @@ body{margin:0}
         function sync(){
           o.classList.toggle('on', inp.checked);
           fol.hidden = !inp.checked;
+          fol.querySelectorAll('textarea').forEach(function(x){ if(x._fit) x._fit(); });
         }
         inp.addEventListener('change', function(){
           clearErr(c);
@@ -219,7 +222,7 @@ body{margin:0}
           if(inp.checked){ arr.push({key:name, name:isOther?(otherInput.value.trim()||'기타'):name, note:noteInput?noteInput.value:''}); }
           else { A[q.id] = arr.filter(function(p){return p.key!==name;}); }
           sync();
-          if(inp.checked){ var first = fol.querySelector('input'); if(first) first.focus({preventScroll:true}); }
+          if(inp.checked){ var first = fol.querySelector('textarea, input'); if(first) first.focus({preventScroll:true}); }
         });
         if(otherInput) otherInput.addEventListener('input', function(){ var p=findPick(q,name); if(p) p.name=otherInput.value.trim()||'기타'; clearErr(c); });
         if(noteInput) noteInput.addEventListener('input', function(){ var p=findPick(q,name); if(p) p.note=noteInput.value; clearErr(c); });
@@ -230,6 +233,16 @@ body{margin:0}
     }
     var err = el('p','err'); err.hidden=true; err.id='err-'+q.id; c.appendChild(err);
     return c;
+  }
+
+  // 한 줄로 시작해 줄바꿈하면 높이가 늘어나는 입력칸
+  function growable(t){
+    t.className='grow'; t.rows=1;
+    function fit(){ if(!t.offsetParent) return; t.style.height='auto'; t.style.height=t.scrollHeight+2+'px'; }
+    t._fit = fit;
+    t.addEventListener('input', fit);
+    requestAnimationFrame(fit);
+    return t;
   }
 
   function clearErr(c){ var e=c.querySelector('.err'); if(e) e.hidden=true; }
