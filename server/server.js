@@ -43,7 +43,7 @@ function limited(ip) {
 }
 
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
-const picks = v => (Array.isArray(v) ? v.slice(0, 20).map(p => ({ name: str(p && p.name, 100), note: str(p && p.note, 500) })).filter(p => p.name) : []);
+const picks = v => (Array.isArray(v) ? v.slice(0, 20).map(p => ({ name: str(p && p.name, 300), note: str(p && p.note, 500) })).filter(p => p.name) : []);
 
 function clean(b) {
   return {

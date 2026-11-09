@@ -193,7 +193,7 @@ body{margin:0}
         var fol = el('div','follow'); fol.hidden = true;
         var otherInput, noteInput;
         if(isOther){
-          otherInput = growable(el('textarea')); otherInput.id=inp.id+'-name';
+          otherInput = growable(el('textarea')); otherInput.maxLength = 300; otherInput.id=inp.id+'-name';
           otherInput.placeholder = q.otherPh || '직접 입력'; otherInput.setAttribute('aria-label','기타 항목');
           fol.appendChild(otherInput);
         }
