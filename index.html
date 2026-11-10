@@ -420,13 +420,24 @@ body{margin:0}
     document.body.style.paddingBottom = (120 + kb) + 'px';
   }
   var timer;
+  // 입력칸을 누른 직후 한 번, 키보드가 올라올 때 한 번만 맞춤. 사용자가 직접 스크롤하면 더 이상 건드리지 않음
+  var lastKb = 0, userMoved = false;
+  function kbHeight(){ return vv ? Math.max(0, window.innerHeight - vv.height) : 0; }
   document.addEventListener('focusin', function(e){
     if(!isField(e.target)) return;
-    clearTimeout(timer); timer = setTimeout(function(){ kbPad(); keepVisible(); }, 320);
+    userMoved = false;
+    clearTimeout(timer); timer = setTimeout(function(){ kbPad(); if(!userMoved) keepVisible(); }, 320);
+  });
+  ['touchmove','wheel'].forEach(function(t){
+    window.addEventListener(t, function(){ userMoved = true; clearTimeout(timer); }, {passive:true});
   });
   document.addEventListener('focusout', function(){ setTimeout(kbPad, 120); });
   if(vv){
-    vv.addEventListener('resize', function(){ kbPad(); clearTimeout(timer); timer = setTimeout(keepVisible, 60); });
+    vv.addEventListener('resize', function(){
+      var kb = kbHeight(), grew = kb - lastKb > 80;     // 키보드가 새로 올라온 경우만 (주소창 접힘·스크롤 무시)
+      lastKb = kb; kbPad();
+      if(grew && !userMoved){ clearTimeout(timer); timer = setTimeout(keepVisible, 60); }
+    });
   }
 
   render();
