@@ -109,6 +109,20 @@ input::placeholder,textarea::placeholder{color:var(--muted); opacity:.8}
 [hidden]{display:none!important}
 body{margin:0}
 :root{padding-top:env(safe-area-inset-top,0px)}
+
+/* Q6 진입 시 잠깐 보여주는 커피 응원 */
+.coffee-pop{position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+  padding:24px 16px; text-align:center; background:rgba(20,23,28,.94); opacity:1; transition:opacity .35s ease}
+.coffee-pop.out{opacity:0}
+.coffee-pop svg{width:150px; height:auto; max-width:100%}
+.coffee-pop h2{font-size:24px; margin-top:6px}
+.coffee-pop p{color:var(--muted); font-size:15px}
+.coffee-pop #coffee{animation:sip 2s cubic-bezier(.45,.05,.55,.95) forwards}
+@keyframes sip{to{transform:translateY(118px)}}
+.coffee-pop #straw-coffee{opacity:0; animation:straw 2s ease-in-out forwards}
+@keyframes straw{0%{opacity:0}12%{opacity:1}85%{opacity:1}100%{opacity:0}}
+.coffee-pop .wave{animation:wave 1.6s ease-in-out infinite alternate}
+@keyframes wave{from{transform:translateX(-6px)}to{transform:translateX(6px)}}
 </style>
 </head>
 <body>
@@ -285,6 +299,22 @@ body{margin:0}
     return '';
   }
 
+  // Q6에 처음 들어올 때 2초간 커피 응원을 보여주고 사라짐
+  var COFFEE_SVG = '<svg viewBox="0 0 200 260" role="img" aria-label="빨대가 꽂힌 일회용 컵 속 아이스 아메리카노가 줄어드는 모습"> <defs> <clipPath id="inside"><path d="M48 66 L152 66 L141 238 Q140 246 132 246 L68 246 Q60 246 59 238 Z"/></clipPath> <clipPath id="straw-in"><rect x="0" y="66" width="200" height="190"/></clipPath> <linearGradient id="coffee-g" x1="0" y1="0" x2="0" y2="1"> <stop offset="0" stop-color="#6B3F24"/> <stop offset=".25" stop-color="#4A2A17"/> <stop offset="1" stop-color="#2B170C"/> </linearGradient> <linearGradient id="cup-shine" x1="0" y1="0" x2="1" y2="0"> <stop offset="0" stop-color="#fff" stop-opacity=".22"/> <stop offset=".18" stop-color="#fff" stop-opacity=".05"/> <stop offset=".8" stop-color="#fff" stop-opacity="0"/> <stop offset="1" stop-color="#fff" stop-opacity=".12"/> </linearGradient> </defs>  <g clip-path="url(#straw-in)"> <path d="M112 236 L128 70" stroke="#E9E4DF" stroke-width="11" stroke-linecap="round" opacity=".55"/> </g>  <g clip-path="url(#inside)"> <g id="coffee"> <rect x="30" y="98" width="140" height="170" fill="url(#coffee-g)"/> <path class="wave" d="M20 100 Q40 92 60 100 T100 100 T140 100 T180 100 V112 H20 Z" fill="#7A4A2B" opacity=".9"/> <g fill="#fff" fill-opacity=".22" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"> <rect x="64" y="94" width="26" height="24" rx="5" transform="rotate(-12 77 106)"/> <rect x="98" y="104" width="24" height="22" rx="5" transform="rotate(10 110 115)"/> <rect x="76" y="124" width="22" height="20" rx="5" transform="rotate(6 87 134)"/> </g> </g> </g>  <path id="straw-coffee" d="M113 226 L127.5 76" stroke="#4A2A17" stroke-width="5" stroke-linecap="round"/>  <path d="M48 66 L152 66 L141 238 Q140 246 132 246 L68 246 Q60 246 59 238 Z" fill="url(#cup-shine)" stroke="#C9CED6" stroke-opacity=".55" stroke-width="2.5" stroke-linejoin="round"/> <path d="M58 82 L66 226" stroke="#fff" stroke-opacity=".25" stroke-width="4" stroke-linecap="round"/>  <rect x="40" y="56" width="120" height="13" rx="6.5" fill="#D9DDE3" fill-opacity=".9"/> <rect x="46" y="50" width="108" height="9" rx="4.5" fill="#EEF0F3" fill-opacity=".9"/>  <path d="M128 70 L136 6" stroke="#F0708A" stroke-width="11" stroke-linecap="round"/> <path d="M128 70 L136 6" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 9"/> </svg>';
+  var coffeeShown = false;
+  function showCoffee(){
+    coffeeShown = true;
+    var pop = el('div','coffee-pop'); pop.setAttribute('role','status');
+    pop.innerHTML = COFFEE_SVG;
+    pop.appendChild(el('h2',null,'거의 다 왔어요!'));
+    pop.appendChild(el('p',null,'조금만 더 힘내주세요. 커피 한 잔이 기다리고 있어요.'));
+    document.body.appendChild(pop);
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function close(){ if(!pop.parentNode) return; pop.classList.add('out'); setTimeout(function(){ pop.remove(); }, 350); }
+    pop.addEventListener('click', close);
+    setTimeout(close, reduce ? 1200 : 2300);
+  }
+
   function render(){
     screen.innerHTML='';
     var top = document.getElementById('top');
@@ -305,6 +335,7 @@ body{margin:0}
       document.getElementById('step-title').textContent = q.sec;
       document.getElementById('step-count').textContent = (pos+1)+' / '+QS.length;
       screen.appendChild(renderQ(q,pos));
+      if(q.id==='hard' && !coffeeShown) showCoffee();
       prev.hidden=false; prev.textContent='이전'; next.hidden=false;
       next.textContent = pos===QS.length-1 ? '제출하기' : (!QS[pos].req && isEmpty(QS[pos]) ? '건너뛰기' : '다음');
     }
