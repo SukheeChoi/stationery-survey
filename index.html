@@ -421,9 +421,14 @@ body{margin:0}
     }
     if(Math.abs(shift) > 4) window.scrollBy({top: shift, behavior:'smooth'});
   }
+  // 키보드가 열리고 닫힐 때만 여백을 바꿈. 스크롤 중 주소창이 접히며 생기는 작은 높이 변화로
+  // 여백이 계속 바뀌면 페이지 길이가 흔들려 맨 아래에서 버벅임이 생김
+  var kbOpen = false;
   function kbPad(){
-    var kb = vv ? Math.max(0, window.innerHeight - vv.height) : 0;
-    document.body.style.paddingBottom = (40 + kb) + 'px';
+    var open = (vv ? Math.max(0, window.innerHeight - vv.height) : 0) > 150 && isField(document.activeElement);
+    if(open === kbOpen) return;
+    kbOpen = open;
+    document.body.style.paddingBottom = open ? '320px' : '';
   }
   var timer;
   // 입력칸을 누른 직후 한 번, 키보드가 올라올 때 한 번만 맞춤. 사용자가 직접 스크롤하면 더 이상 건드리지 않음
