@@ -258,7 +258,7 @@ body{margin:0}
           if(inp.checked){ arr.push({key:name, name:isOther?(otherInput.value.trim()||'기타'):name, note:noteInput?noteInput.value:''}); }
           else { A[q.id] = arr.filter(function(p){return p.key!==name;}); }
           sync();
-          if(inp.checked && !q.noFocus){ var first = fol.querySelector('textarea, input'); if(first) first.focus({preventScroll:true}); }
+          if(inp.checked && (!q.noFocus || isOther)){ var first = fol.querySelector('textarea, input'); if(first) first.focus({preventScroll:true}); }
         });
         if(otherInput) otherInput.addEventListener('input', function(){ var p=findPick(q,name); if(p) p.name=otherInput.value.trim()||'기타'; clearErr(c); });
         if(noteInput) noteInput.addEventListener('input', function(){ var p=findPick(q,name); if(p) p.note=noteInput.value; if(noteInput.value.trim()) noteInput.classList.remove('missing'); clearErr(c); });
