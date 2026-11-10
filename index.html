@@ -159,7 +159,7 @@ body{margin:0}
     {id:'years', type:'radio', sec:'기본 정보', t:'문구 사업을 하신 지 얼마나 되셨나요?', opts:['6개월 미만','6개월 ~ 1년','1년 ~ 3년','3년 ~ 5년','5년 이상']},
     {id:'kinds', type:'check', sec:'기본 정보', t:'주로 만드는 제품을 모두 골라주세요.', opts:['스티커','메모지·떡메','엽서·카드','다이어리·노트','마스킹테이프','키링·아크릴 굿즈','포장용품(봉투·씰)'], other:true},
     {id:'recent', type:'text', multiline:true, req:true, sec:'최근 만든 제품', t:'가장 최근에 제작한 문구는 무엇인가요?', help:'기억나는 대로 편하게 적어주세요.', ph:'예) 30장 원형 씰 스티커'},
-    {id:'process', type:'check', req:true, sec:'최근 만든 제품', t:'그 제품을 만들어 판매하기까지 거친 과정을 모두 골라주세요.',
+    {id:'process', type:'check', req:true, noFocus:true, sec:'최근 만든 제품', t:'그 제품을 만들어 판매하기까지 거친 과정을 모두 골라주세요.',
       help:'고른 과정에 <b>어떻게 했는지, 어떤 불편함이 있었는지</b> 짧게라도 적어주시면 큰 도움이 돼요. <b>필수는 아니에요.</b>\n예) 생산공장 찾기 어려움. 소량생산 거절당함',
       opts:STEPS, other:true, otherPh:'선택지에 없는 과정이 있다면 적어주세요', follow:{label:'어떻게 했나요? 어떤 불편함이 있었나요?'}},
     {id:'hard', type:'check', req:true, followReqAll:true, sec:'까다로운 과정', t:'제작·판매 과정 중 까다로운 과정을 골라주세요.',
@@ -258,7 +258,7 @@ body{margin:0}
           if(inp.checked){ arr.push({key:name, name:isOther?(otherInput.value.trim()||'기타'):name, note:noteInput?noteInput.value:''}); }
           else { A[q.id] = arr.filter(function(p){return p.key!==name;}); }
           sync();
-          if(inp.checked){ var first = fol.querySelector('textarea, input'); if(first) first.focus({preventScroll:true}); }
+          if(inp.checked && !q.noFocus){ var first = fol.querySelector('textarea, input'); if(first) first.focus({preventScroll:true}); }
         });
         if(otherInput) otherInput.addEventListener('input', function(){ var p=findPick(q,name); if(p) p.name=otherInput.value.trim()||'기타'; clearErr(c); });
         if(noteInput) noteInput.addEventListener('input', function(){ var p=findPick(q,name); if(p) p.note=noteInput.value; if(noteInput.value.trim()) noteInput.classList.remove('missing'); clearErr(c); });
