@@ -2,3 +2,5 @@ server/node_modules/
 server/.env
 server/events.log
 server/*.out
+prospects*.csv
+dm-log.csv
